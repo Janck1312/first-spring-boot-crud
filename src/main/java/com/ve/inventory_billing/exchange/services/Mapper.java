@@ -49,6 +49,7 @@ public class Mapper <U, T> {
             fieldWithNewData.setAccessible(true);
             Field fieldToUpdate = oldData.getClass().getDeclaredField(fieldWithNewData.getName());
             fieldToUpdate.setAccessible(true);
+            if(fieldToUpdate.getName().equals("id")) continue;
             fieldToUpdate.set(oldData, fieldWithNewData.get(newData));
         }
         return oldData;
