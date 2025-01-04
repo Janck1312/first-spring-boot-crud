@@ -9,8 +9,14 @@ import com.ve.inventory_billing.repositories.ProductRepository;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.apache.coyote.BadRequestException;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -68,6 +74,35 @@ public class ProductService {
 
     public void deleteById(Integer id) {
         this.productRepository.deleteById(id);
+    }
+
+    public void importExcelFile(MultipartFile file) throws IOException {
+        List <Product> tempProductList = new ArrayList<Product>();
+        XSSFWorkbook workbook = new XSSFWorkbook(file.getInputStream());
+        XSSFSheet worksheet = workbook.getSheetAt(0);
+        for(int i = 1; i < worksheet.getPhysicalNumberOfRows(); i++) {
+            XSSFRow row = worksheet.getRow(i);
+
+            tempProductList.add(
+                this.getObjectWithExcelData(row)
+            );
+        }
+        this.productRepository.saveAll(tempProductList);
+    }
+
+    private Product getObjectWithExcelData(XSSFRow row) {
+        Product product = new Product();
+        product.setName(row.getCell(0).getStringCellValue());
+        product.setDescription(row.getCell(1).getStringCellValue());
+        product.setCode(row.getCell(2).getStringCellValue());
+        product.setBrutePrice(Float.parseFloat(String.valueOf(row.getCell(3).getNumericCellValue())));
+        product.setNetPrice(Float.parseFloat(String.valueOf(row.getCell(4).getNumericCellValue())));
+        product.setTax(Integer.parseInt(
+                    String.valueOf(row.getCell(5).getNumericCellValue()).replaceAll(".0", "")
+                )
+        );
+        product.setStock(Float.parseFloat(String.valueOf(row.getCell(6).getNumericCellValue())));
+        return product;
     }
 
     private Boolean findByCode(String code) {

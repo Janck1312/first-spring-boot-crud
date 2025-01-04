@@ -10,7 +10,9 @@ import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 
@@ -25,6 +27,11 @@ public class ProductController {
     @PostMapping
     CreateProductDto save(@RequestBody CreateProductDto createProductDto) throws BadRequestException {
         return this.productService.save(createProductDto);
+    }
+
+    @PostMapping("/import-excel-batch")
+    void importProductFromExcel(@RequestParam("file") MultipartFile file) throws IOException {
+        this.productService.importExcelFile(file);
     }
 
     @PutMapping("/{id}")
